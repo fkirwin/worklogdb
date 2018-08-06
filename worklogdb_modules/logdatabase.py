@@ -14,7 +14,7 @@ class BaseModel(Model):
 
 class Entry(BaseModel):
     title = CharField()
-    start_date = DateField(default=datetime.date.today())
+    start_date = DateField()
     time_spent = IntegerField()
     employee_name = CharField()
     notes = CharField(null=True)
@@ -28,11 +28,17 @@ def get_all_entries():
                                    each.time_spent,
                                    each.employee_name,
                                    each.notes))
-
     return entries
 
-def get_specific_entry(criteria):
-    pass
+def get_specific_entries(columns, where_clause):
+    entries = []
+    for each in Entry.select(columns).where(where_clause):
+        entries.append(entry.Entry(each.title,
+                                   each.start_date,
+                                   each.time_spent,
+                                   each.employee_name,
+                                   each.notes))
+    return entries
 
 def write_new_entry(entry_input):
     Entry.create(title = entry_input.title,
@@ -41,14 +47,9 @@ def write_new_entry(entry_input):
                  employee_name = entry_input.employee_name,
                  notes = entry_input.notes)
 
-
-
 def bootstrap_database():
     with db:
         db.create_tables([Entry], safe = True)
 
 
-bootstrap_database()
 
-write_new_entry(entry.Entry("title", "01-01-1999", 2, "red", "notes"))
-print(get_all_entries())

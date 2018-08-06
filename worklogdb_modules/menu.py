@@ -2,10 +2,11 @@ import collections
 import datetime
 import os
 import sys
+import time
 
 import worklogdb_modules.customutils as customutils
-import worklogdb_modules.customutils as entry
-import worklogdb_modules.log_database as log_database
+import worklogdb_modules.entry as entry
+import worklogdb_modules.logdatabase as log_database
 import worklogdb_modules.search as search
 
 
@@ -19,8 +20,6 @@ class Menu:
                                                ("New Entry", {"shortcut": "ne", "call": self.write_entry}),
                                                ("Search Entries", {"shortcut": "se", "call": self.search_entries}),
                                                ("Exit the program", {"shortcut": "e", "call": self.exit_program})])
-        log_database.bootstrap_database()
-        ##self.log_database = log.Log(self.DEFAULT_LOG)
 
     def run(self):
         while True:
@@ -34,6 +33,7 @@ class Menu:
 
     def display_main_menu(self):
         """The main menu."""
+        self.clear_text()
         print(self.SEPARATOR, "Greetings!  Here are our options.")
         for name, method in self.options.items():
             print("Type {} to {}.  {}"
@@ -57,13 +57,14 @@ class Menu:
                 time_spent = self._get_time_spent_from_user()
                 notes = self._get_details_from_user()
                 new_entry = entry.Entry(title, start_time, time_spent, notes)
-                self.log_connection.write_new_entry(new_entry)
+                log_database.write_new_entry(new_entry)
             except Exception as exc:
                 print(exc)
                 attempt -= 1
             else:
-                print(str(new_entry))
+                print(new_entry)
                 print("Entry was successful!  Heading back to the main menu.")
+                time.sleep(3)
                 break
 
     def search_entries(self):
@@ -71,91 +72,87 @@ class Menu:
         search_options = {"by date": ["date", "by_date"],
                           "by time spent": ["time spent", "by_time_spent"],
                           "exact": ["exact", "exact"],
-                          "regex": ["regex", "regex"]}
-        search_engine = search.Search(self.log_connection.get_entries())
+                          "by employee": ["employee", "employee"]}
         print(self.SEPARATOR, "Please select a method to search for entries.")
         for key, value in search_options.items():
             print("Type {} to search using {}.".format(value[0], key))
         search_selection = input("Selection:")
         if search_selection.lower() == "date":
-            search_results = self._search_date(search_engine)
-            if isinstance(search_results, list) and len(search_results) > 0:
-                for each in search_results:
-                    print(each)
-            else:
-                print(search_results)
+            self._search_date()
         elif search_selection.lower() == "time spent":
-            search_results = self._search_time_spent(search_engine)
-            if isinstance(search_results, list) and len(search_results) > 0:
-                for each in search_results:
-                    print(each)
-            else:
-                print(search_results)
+            self._search_time_spent()
         elif search_selection.lower() == "exact":
-            search_results = self._search_exact(search_engine)
-            if isinstance(search_results, list) and len(search_results) > 0:
-                for each in search_results:
-                    print(each)
-            else:
-                print(search_results)
+            self._search_by_word()
         elif search_selection.lower() == "regex":
-            search_results = self._search_regex(search_engine)
-            if isinstance(search_results, list) and len(search_results) > 0:
-                for each in search_results:
-                    print(each)
-            else:
-                print(search_results)
+            self._search_employee()
         else:
             print("That is not a valid selection.")
             self.search_entries()
 
-    def _search_date(self, search_engine):
-        start_time_selection = input("Which date?  Use {} format.".format(entry.Entry.date_format))
+
+    def _search_date(self):
+        entries = log_database.get_all_entries()
+        start_time_selection = input("Which date?  Use {} format. Options: {}".
+                                     format(entry.Entry.date_format,
+                                            [str(entry.start_date)+', ' for entry in entries]))
+        search_engine = search.Search(entries)
         try:
             returned_entries = search_engine.by_date(start_time_selection)
             if len(returned_entries) > 0:
-                return returned_entries
+                self._page_entries(returned_entries)
+                return "All entries have been viewed."
             else:
                 return "No entries meet that criteria."
         except Exception as err:
             print(err)
-            return self._search_date(search_engine)
+            return self._search_date()
 
-    def _search_time_spent(self, search_engine):
-        time_spent_selection = input("How long?  Use an integer.")
+    def _search_time_spent(self):
+        entries = log_database.get_all_entries()
+        time_spent_selection = input("How long?  Use an integer. Options: {}".
+                                     format([str(entry.time_spent) + ', ' for entry in entries]))
+        search_engine = search.Search(entries)
         try:
             returned_entries = search_engine.by_time_spent(time_spent_selection)
             if len(returned_entries) > 0:
-                return returned_entries
+                self._page_entries(returned_entries)
+                return "All entries have been viewed."
             else:
                 return "No entries meet that criteria."
         except Exception as err:
             print(err)
-            return self._search_time_spent(search_engine)
+            return self._search_time_spent()
 
-    def _search_exact(self, search_engine):
-        exact_selection = input("Type the exact title or note.")
+    def _search_by_word(self):
+        entries = log_database.get_all_entries()
+        exact_selection = input("Type the phrase to search for.")
+        search_engine = search.Search(entries)
         try:
-            returned_entries = search_engine.exact(exact_selection)
+            returned_entries = search_engine.words_in_entry(exact_selection)
             if len(returned_entries) > 0:
-                return returned_entries
+                self._page_entries(returned_entries)
+                return "All entries have been viewed."
             else:
                 return "No entries meet that criteria."
         except Exception as err:
             print(err)
-            return self._search_exact()
+            return self._search_by_word()
 
-    def _search_regex(self, search_engine):
-        regex_selection = input("Type the pattern.")
+    def _search_employee(self):
+        entries = log_database.get_all_entries()
+        employee_name = input("Type the employee's name.Options: {}".
+                                     format([str(entry.employee_name) + ', ' for entry in entries]))
+        search_engine = search.Search(entries)
         try:
-            returned_entries = search_engine.regex(regex_selection)
+            returned_entries = search_engine.by_employee_name(employee_name)
             if len(returned_entries) > 0:
-                return returned_entries
+                self._page_entries(returned_entries)
+                return "All entries have been viewed."
             else:
                 return "No entries meet that criteria."
         except Exception as err:
             print(err)
-            return self._search_regex()
+            return self._search_employee()
 
     def _get_title_from_user(self):
         title = input("Please enter a title for this entry:")
@@ -190,14 +187,44 @@ class Menu:
         notes = input("Enter details:")
         return notes
 
-    def __show_available_dates(self):
-        pass
+    def _show_all_employees(self, entries):
+        matching_entries = []
+        for each in entries:
+            matching_entries.append(each.employee_name)
+        return matching_entries
 
-    def __show_available_times_spent(self):
-        pass
+    def _show_all_dates(self, entries):
+        matching_entries = []
+        for each in entries:
+            matching_entries.append(each.start_date)
+        return matching_entries
 
-    def __show_available_employee_entries(self):
-        pass
+    def _show_all_time_spent(self, entries):
+        matching_entries = []
+        for each in entries:
+                matching_entries.append(each.time_spent)
+        return matching_entries
+
+    def _page_entries(self, entries, start = 0):
+        """Prompts user to page through search results."""
+        while True:
+            current_entry_position = start
+            print(self.SEPARATOR)
+            print(entries[current_entry_position])
+            print(self.SEPARATOR)
+            next_entry_prompt = input("To view next entry type N. To view previous type P.  To exit, type e.")
+            if next_entry_prompt == 'N' and current_entry_position < len(entries):
+                current_entry_position+=1
+                self._page_entries(entries, current_entry_position)
+            elif next_entry_prompt == 'P' and current_entry_position > 0:
+                current_entry_position -= 1
+                self._page_entries(entries, current_entry_position)
+            elif next_entry_prompt == 'e':
+                self.clear_text()
+                break
+            else:
+                print("Incorrect selection, please try again.")
+                return self._page_entries(entries, current_entry_position)
 
     def exit_program(self):
         """Exits the program."""

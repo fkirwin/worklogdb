@@ -1,4 +1,5 @@
-import worklogdb_modules.menu as menu
+import worklogdb_modules.menu as m
+import worklogdb_modules.logdatabase as ld
 
 
 ##TODO: Need to create a menu.  Menu - two functionalities to add or search for entries.
@@ -9,5 +10,6 @@ import worklogdb_modules.menu as menu
 ##TODO: 50% test coverage minimum
 
 if __name__ == '__main__':
-    menu = menu.Menu()
+    ld.bootstrap_database()
+    menu = m.Menu()
     menu.run()

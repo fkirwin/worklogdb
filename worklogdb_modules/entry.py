@@ -4,15 +4,16 @@ import worklogdb_modules.customutils as customutils
 
 class Entry:
     """A class representing an entry object."""
+    row_delim = '\n'
     msg = "Title: {} {} Total Duration: {} {} Started: {} {} Notes: {} {} Employee Name: {} {}"
     date_format = "%m-%d-%Y"
 
-    def __init__(self, _title, _start_date, _time_spent, _employee_name, _notes=None):
-        self._title = _title
-        self._start_date = self.__handle_date(_start_date)
-        self._time_spent = self.__handle_time_spent(_time_spent)
-        self._employee_name = _employee_name
-        self._notes = _notes
+    def __init__(self, title, start_date, time_spent, employee_name, notes=None):
+        self._title = title
+        self._start_date = self.__handle_date(start_date)
+        self._time_spent = self.__handle_time_spent(time_spent)
+        self._employee_name = employee_name
+        self._notes = notes
 
     def __str__(self):
         if self._time_spent:
@@ -64,17 +65,14 @@ class Entry:
         self._employee_name = employee_name
 
     def __handle_date(self, target_date):
-        try:
-            if isinstance(target_date, str):
-                return customutils.generate_proper_date_from_string(target_date, self.date_format)
+        if isinstance(target_date, str):
+            if target_date.lower() == 'now':
+                return customutils.generate_proper_date_from_date(datetime.datetime.now(), self.date_format)
             else:
-                return customutils.generate_proper_date_from_date(target_date, self.date_format)
-        except Exception as err:
-            raise err
+                return customutils.generate_proper_date_from_string(target_date, self.date_format)
+        else:
+            return customutils.generate_proper_date_from_date(target_date, self.date_format)
 
     def __handle_time_spent(self, time_spent):
-        try:
-            r_time_spent = int(time_spent)
-            return r_time_spent
-        except Exception as err:
-            raise err
+        r_time_spent = int(time_spent)
+        return r_time_spent

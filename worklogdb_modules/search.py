@@ -42,9 +42,11 @@ class Search:
                 matching_entries.append(each)
         return matching_entries
 
-    def employee(self, target_employee):
+    def by_employee_name(self, target_employee):
         matching_entries = []
         for each in self.entries:
             if target_employee == each.employee_name:
                 matching_entries.append(each)
         return matching_entries
+
+
