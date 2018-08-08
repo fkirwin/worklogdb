@@ -55,8 +55,9 @@ class Menu:
                 title = self._get_title_from_user()
                 start_time = self._get_start_date_from_user()
                 time_spent = self._get_time_spent_from_user()
+                employee =self._get_employee_from_user()
                 notes = self._get_details_from_user()
-                new_entry = entry.Entry(title, start_time, time_spent, notes)
+                new_entry = entry.Entry(title, start_time, time_spent, employee, notes)
                 log_database.write_new_entry(new_entry)
             except Exception as exc:
                 print(exc)
@@ -183,6 +184,10 @@ class Menu:
             print("Please enter valid integer.")
             return self._get_time_spent_from_user()
 
+    def _get_employee_from_user(self):
+        employee = input("Enter employee name:")
+        return employee
+
     def _get_details_from_user(self):
         notes = input("Enter details:")
         return notes
@@ -205,26 +210,33 @@ class Menu:
                 matching_entries.append(each.time_spent)
         return matching_entries
 
-    def _page_entries(self, entries, start = 0):
+    def _page_entries(self, entries):
         """Prompts user to page through search results."""
+        last = "LAST ENTRY"
+        first = "FIRST ENTRY"
+        current_entry_position = 0
         while True:
-            current_entry_position = start
-            print(self.SEPARATOR)
-            print(entries[current_entry_position])
-            print(self.SEPARATOR)
+            if current_entry_position == 0:
+                print(first + self.SEPARATOR)
+                print(entries[current_entry_position])
+                print(first + self.SEPARATOR)
+            elif current_entry_position == len(entries) - 1:
+                print(last + self.SEPARATOR)
+                print(entries[current_entry_position])
+                print(last + self.SEPARATOR)
+            else:
+                print(self.SEPARATOR)
+                print(entries[current_entry_position])
+                print(self.SEPARATOR)
             next_entry_prompt = input("To view next entry type N. To view previous type P.  To exit, type e.")
-            if next_entry_prompt == 'N' and current_entry_position < len(entries):
-                current_entry_position+=1
-                self._page_entries(entries, current_entry_position)
+            if next_entry_prompt == 'N' and current_entry_position < len(entries) - 1:
+                current_entry_position += 1
             elif next_entry_prompt == 'P' and current_entry_position > 0:
                 current_entry_position -= 1
-                self._page_entries(entries, current_entry_position)
             elif next_entry_prompt == 'e':
-                self.clear_text()
                 break
             else:
-                print("Incorrect selection, please try again.")
-                return self._page_entries(entries, current_entry_position)
+                print("You have reached the start or finish of the search. Please try again.")
 
     def exit_program(self):
         """Exits the program."""
