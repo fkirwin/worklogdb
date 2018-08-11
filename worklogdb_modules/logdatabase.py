@@ -1,21 +1,21 @@
 #!/usr/bin/python
 import os
-import datetime
+
 from peewee import *
-import worklogdb_modules.entry as entry
-import worklogdb_modules.customutils as customutils
 
 dirname = os.path.dirname(__file__)
 DATABASE = os.path.join(dirname, '../database/log.db')
 db = SqliteDatabase(DATABASE)
 
+
 class BaseModel(Model):
     class Meta:
         database = db
 
+
 class Entry(BaseModel):
     row_delim = '\n'
-    msg = "Title: {} {} Total Duration: {} {} Started: {} {} Notes: {} {} Employee Name: {} {}"
+    msg = "Title: {} {} Total Duration: {} {} Started: {} {} Employee Name: {} {} Notes: {} {}"
     date_format = "%Y-%m-%d"
     title = CharField()
     start_date = DateField()
@@ -25,8 +25,8 @@ class Entry(BaseModel):
 
     def __str__(self):
         return_msg = self.msg.format(self.title, self.row_delim,
-                                     str(self.start_date), self.row_delim,
                                      str(self.time_spent) + " minutes", self.row_delim,
+                                     str(self.start_date), self.row_delim,
                                      self.employee_name, self.row_delim,
                                      self.notes, self.row_delim)
         return return_msg
@@ -55,13 +55,17 @@ class Entry(BaseModel):
 
     @classmethod
     def write_new_entry(cls, entry_input):
-        Entry.create(title = entry_input.title,
-                     start_date = entry_input.start_date,
-                     time_spent = entry_input.time_spent,
-                     employee_name = entry_input.employee_name,
-                     notes = entry_input.notes)
+        Entry.create(title=entry_input.title,
+                     start_date=entry_input.start_date,
+                     time_spent=entry_input.time_spent,
+                     employee_name=entry_input.employee_name,
+                     notes=entry_input.notes)
 
 
 def bootstrap_database():
     with db:
-        db.create_tables([Entry], safe = True)
+        db.create_tables([Entry], safe=True)
+
+def teardown_datanase():
+    with db:
+        db.drop_tables([Entry])
