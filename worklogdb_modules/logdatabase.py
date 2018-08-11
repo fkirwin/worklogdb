@@ -66,6 +66,7 @@ def bootstrap_database():
     with db:
         db.create_tables([Entry], safe=True)
 
+
 def teardown_datanase():
     with db:
         db.drop_tables([Entry])

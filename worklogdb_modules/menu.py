@@ -14,7 +14,7 @@ class Menu:
     def __init__(self):
         self.options = collections.OrderedDict([("Clear Text",{"shortcut": "c", "call": self.clear_text}),
                                                ("New Entry", {"shortcut": "ne", "call": self.write_entry}),
-                                               ("Search Entries", {"shortcut": "se", "call": self.search_entries}),
+                                               ("Search Entries", {"shortcut": "se", "call": self.search_entries}), 
                                                ("Exit the program", {"shortcut": "e", "call": self.exit_program})])
         self.positive_entry_message = "All entries have been viewed."
         self.negative_entry_message = "No entries meet that criteria."
@@ -138,7 +138,7 @@ class Menu:
     def _search_employee(self):
         employees = log_database.Entry.get_available_values_for_entries("employee_name")
         employee = input("Type the employee's name. Options: {}".
-                              format([",".join([str(employee)]) for employee in employees]))
+                         format([",".join([str(employee)]) for employee in employees]))
         try:
             returned_entries = log_database.Entry.get_specific_entries(log_database.Entry.employee_name.contains(employee))
             if len(returned_entries) > 0:

@@ -1,22 +1,23 @@
+import datetime
 import sys
 import unittest
 import unittest.mock
 from io import StringIO
 from contextlib import redirect_stdout
-import datetime
 
 import worklogdb_modules.menu as menu
 import worklogdb_modules.logdatabase as logdatabase
+
 
 class TestUM(unittest.TestCase):
     positive_entry_message = "All entries have been viewed."
     negative_entry_message = "No entries meet that criteria."
     test_menu = menu.Menu()
     test_entry = logdatabase.Entry(title="test",
-                              start_date="1999-01-01",
-                              time_spent=1,
-                              employee_name="Dan",
-                              notes="test notes")
+                                   start_date="1999-01-01",
+                                   time_spent=1,
+                                   employee_name="Dan",
+                                   notes="test notes")
 
     def setUp(self):
         logdatabase.bootstrap_database()
@@ -62,7 +63,6 @@ class TestUM(unittest.TestCase):
         sys.stdin = StringIO("Larry")
         self.assertNotEqual(self.test_menu._search_employee(), None)
 
-
     def test_get_title_from_user(self):
         sys.stdin = StringIO("test")
         self.assertNotEqual(self.test_menu._get_title_from_user(), "none")
@@ -73,7 +73,7 @@ class TestUM(unittest.TestCase):
                          datetime.datetime.strptime(datetime.datetime.today().strftime("%Y-%m-%d"), "%Y-%m-%d"))
 
         sys.stdin = StringIO("1999-01-01")
-        self.assertEqual(self.test_menu._get_start_date_from_user().strftime("%Y-%m-%d"),"1999-01-01")
+        self.assertEqual(self.test_menu._get_start_date_from_user().strftime("%Y-%m-%d"), "1999-01-01")
 
     def test_get_time_spent_from_user(self):
         sys.stdin = StringIO("1")
