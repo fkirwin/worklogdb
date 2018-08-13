@@ -1,12 +1,12 @@
 import datetime
 import sys
-import unittest
 import unittest.mock
-from io import StringIO
 from contextlib import redirect_stdout
+from io import StringIO
 
-import worklogdb_modules.menu as menu
-import worklogdb_modules.logdatabase as logdatabase
+import logdatabase as logdatabase
+
+import menu as menu
 
 
 class TestUM(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestUM(unittest.TestCase):
         f = StringIO("test2\n1999-01-01\n1000\nBarry\ntest notes")
         sys.stdin = f
         self.assertIsNone(self.test_menu.write_entry())
-        self.assertEqual(db_count+1, len(logdatabase.Entry.get_all_entries()))
+        self.assertEqual(db_count + 1, len(logdatabase.Entry.get_all_entries()))
 
     def test_search_date(self):
         sys.stdin = StringIO("1800-01-01")

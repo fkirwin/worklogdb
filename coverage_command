@@ -1,2 +1,0 @@
--m unittest discover -s C:/TreehouseProjects/worklogdb/worklogdb_modules/test -t C:\TreehouseProjects\worklogdb\worklogdb_modules\test
-coverage report --omit worklogdb_modules/test/*

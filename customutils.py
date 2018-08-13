@@ -12,6 +12,7 @@ def generate_proper_date_from_string(str_object, date_format):
 
 
 def handle_date(target_date, date_format):
+    """Globally used to handle dates in forms that they come in."""
     if isinstance(target_date, str):
         if target_date.lower() == 'now':
             return generate_proper_date_from_date(datetime.datetime.now(), date_format)

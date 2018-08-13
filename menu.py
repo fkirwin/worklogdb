@@ -3,8 +3,9 @@ import os
 import sys
 import time
 
-import worklogdb_modules.customutils as customutils
-import worklogdb_modules.logdatabase as log_database
+import logdatabase as log_database
+
+import customutils as customutils
 
 
 class Menu:
@@ -14,7 +15,7 @@ class Menu:
     def __init__(self):
         self.options = collections.OrderedDict([("Clear Text",{"shortcut": "c", "call": self.clear_text}),
                                                ("New Entry", {"shortcut": "ne", "call": self.write_entry}),
-                                               ("Search Entries", {"shortcut": "se", "call": self.search_entries}), 
+                                               ("Search Entries", {"shortcut": "se", "call": self.search_entries}),
                                                ("Exit the program", {"shortcut": "e", "call": self.exit_program})])
         self.positive_entry_message = "All entries have been viewed."
         self.negative_entry_message = "No entries meet that criteria."
@@ -63,7 +64,7 @@ class Menu:
             else:
                 print(new_entry)
                 print("Entry was successful!  Heading back to the main menu.")
-                time.sleep(3)
+                time.sleep(5)
                 break
 
     def search_entries(self):
@@ -77,34 +78,42 @@ class Menu:
             print("Type {} to search using {}.".format(value[0], key))
         search_selection = input("Selection:")
         if search_selection.lower() == "date":
-            self._search_date()
+            print(self._search_date())
+            time.sleep(5)
         elif search_selection.lower() == "time spent":
-            self._search_time_spent()
+            print(self._search_time_spent())
+            time.sleep(5)
         elif search_selection.lower() == "exact":
-            self._search_by_word()
+            print(self._search_by_word())
+            time.sleep(5)
         elif search_selection.lower() == "employee":
-            self._search_employee()
+            print(self._search_employee())
+            time.sleep(5)
         else:
             print("That is not a valid selection.")
+            time.sleep(5)
             self.search_entries()
 
     def _search_date(self):
+        """Searches DB by the date entered by the user."""
         dates = log_database.Entry.get_available_values_for_entries("start_date")
-        start_date_selection = self._get_start_date_from_user()
-        print("Options: {}".format([",".join([str(date)]) for date in dates]))
+        start_date_selection = input("Select a date from the list or type now to access today's entries."
+                                     "Options: {}".format([",".join([str(date)]) for date in dates]))
         try:
-            returned_entries = log_database.Entry.get_specific_entries(log_database.Entry.start_date == start_date_selection)
+            start_date = customutils.handle_date(start_date_selection, log_database.Entry.date_format)
+            returned_entries = log_database.Entry.get_specific_entries(log_database.Entry.start_date == start_date)
             if len(returned_entries) > 0:
                 self._page_entries(returned_entries)
                 return self.positive_entry_message
             else:
-                time.sleep(2)
                 return self.negative_entry_message
         except Exception as err:
             print(err)
+            time.sleep(5)
             return self._search_date()
 
     def _search_time_spent(self):
+        """Searches DB by the time spent entered by the user."""
         times_spent = log_database.Entry.get_available_values_for_entries("time_spent")
         time_spent_selection = input("How long?  Use an integer. Options: {}".
                                      format([",".join([str(options)]) for options in times_spent]))
@@ -114,13 +123,14 @@ class Menu:
                 self._page_entries(returned_entries)
                 return self.positive_entry_message
             else:
-                time.sleep(2)
                 return self.negative_entry_message
         except Exception as err:
             print(err)
+            time.sleep(5)
             return self._search_time_spent()
 
     def _search_by_word(self):
+        """Searches DB by the phrase entered by the user."""
         exact_selection = input("Type the phrase to search for.")
         try:
             returned_entries = log_database.Entry.get_specific_entries((log_database.Entry.title.contains(exact_selection))
@@ -129,13 +139,14 @@ class Menu:
                 self._page_entries(returned_entries)
                 return self.positive_entry_message
             else:
-                time.sleep(2)
                 return self.negative_entry_message
         except Exception as err:
             print(err)
+            time.sleep(5)
             return self._search_by_word()
 
     def _search_employee(self):
+        """Searches DB by the employee entered by the user."""
         employees = log_database.Entry.get_available_values_for_entries("employee_name")
         employee = input("Type the employee's name. Options: {}".
                          format([",".join([str(employee)]) for employee in employees]))
@@ -145,10 +156,10 @@ class Menu:
                 self._page_entries(returned_entries)
                 return self.positive_entry_message
             else:
-                time.sleep(2)
                 return self.negative_entry_message
         except Exception as err:
             print(err)
+            time.sleep(5)
             return self._search_employee()
 
     def _get_title_from_user(self):
@@ -223,7 +234,8 @@ class Menu:
             elif next_entry_prompt == 'e':
                 break
             else:
-                print("You have reached the start or finish of the search or an improper command. Please try again.")
+                print("You have reached the start or finish of the search or entered an improper command. Please try again.")
+                time.sleep(5)
 
     def exit_program(self):
         """Exits the program."""

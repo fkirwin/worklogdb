@@ -4,7 +4,7 @@ import os
 from peewee import *
 
 dirname = os.path.dirname(__file__)
-DATABASE = os.path.join(dirname, '../database/log.db')
+DATABASE = os.path.join(dirname, 'log.db')
 db = SqliteDatabase(DATABASE)
 
 
@@ -14,6 +14,7 @@ class BaseModel(Model):
 
 
 class Entry(BaseModel):
+    """Entry class to map to DB."""
     row_delim = '\n'
     msg = "Title: {} {} Total Duration: {} {} Started: {} {} Employee Name: {} {} Notes: {} {}"
     date_format = "%Y-%m-%d"
